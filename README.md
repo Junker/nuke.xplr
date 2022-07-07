@@ -63,7 +63,7 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
 
   require("nuke").setup{
     pager = "more", -- default: less -R
-    run_executables = false, -- default: true
+    run_executables = true, -- default: false
     custom = {
       {extension = "jpg", command = "sxiv {}"},
       {extension = "so", command = "ldd -r {} | less"},
