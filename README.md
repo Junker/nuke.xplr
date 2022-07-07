@@ -1,13 +1,24 @@
-# xplr plugin template
+# Nuke: xplr file opener
 
-Use this template to [write your own xplr plugin](https://arijitbasu.in/xplr/en/writing-plugins.html).
+Plugin for [xplr](https://github.com/sayanarijit/xplr): open files in apps by file type or mime
 
-> **NOTE:** The `src` directory is a symlink to `.` for compatibility reasons.
-> It may be removed in the future.
+inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https://github.com/jarun/nnn/blob/master/plugins/nuke).
 
 ## Requirements
 
-- Some tool
+| File type    | Program                |
+|:-------------|:-----------------------|
+| Image        | viu/timg/chafa/img2txt |
+| Video        | mpv/mplayer            |
+| Audio        | mpv/mplayer            |
+| Archive      | atool/dtrx/ouch        |
+| OpenDocument | odt2txt                |
+| HTML         | w3m/lynx/elinks        |
+| PDF          | termpdf/pdftotext      |
+| DJVU         | termpdf                |
+| Executable   | dialog                 |
+
+*recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
 
 ## Installation
 
@@ -29,24 +40,43 @@ Use this template to [write your own xplr plugin](https://arijitbasu.in/xplr/en/
   ```bash
   mkdir -p ~/.config/xplr/plugins
 
-  git clone https://github.com/{username}/{plugin}.xplr ~/.config/xplr/plugins/{plugin}
+  git clone https://github.com/Junker/nuke.xplr ~/.config/xplr/plugins/nuke
   ```
-
-- Require the module in `~/.config/xplr/init.lua`
+  
+### Install with [xpm](https://github.com/dtomvan/xpm.xplr)
 
   ```lua
-  require("{plugin}").setup()
+  require("xpm").setup({
+    plugins = {
+      'dtomvan/xpm.xplr',
+      'Junker/nuke.xplr'
+    }
+  })
+  ```
+
+### Usage
+  
+  ```lua
+  require("nuke").setup()
 
   -- Or
 
-  require("{plugin}").setup{
-    mode = "action",
-    key = ":",
+  require("nuke").setup{
+    pager = "more", -- default: less -R
+    run_executables = false, -- default: true
+    custom = {
+      {extension = "jpg", command = "sxiv {}"},
+      {extension = "so", command = "ldd -r {} | less"},
+      {mime = "video/mp4", command = "vlc {}"},
+      {mime_regex = "^video/.*", command = "smplayer {}"}
+      {mime_regex = ".*", command = "xdg-open {}"}
+    }
   }
-
-  -- Type `::` and enjoy.
+  
+  xplr.config.modes.builtin.default.key_bindings.on_key["enter"] = {
+    help = "nuke",
+    messages = {
+      {CallLuaSilently = "custom.nuke_handle_node"}
+    }
+  }
   ```
-
-## Features
-
-- Some cool feature
