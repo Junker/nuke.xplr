@@ -16,6 +16,7 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
 | HTML         | w3m/lynx/elinks        |
 | PDF          | termpdf/pdftotext      |
 | DJVU         | termpdf                |
+| Markdown     | glow/lowdown           |
 | Executable   | dialog                 |
 
 *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
