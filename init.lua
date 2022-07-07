@@ -51,7 +51,6 @@ end
 local function exec(command, node, ...)
 	local args = {...}
 
-
 	if args[1] ~= nil then
 		local t = args
 		table.insert(t, node.absolute_path)
@@ -181,7 +180,7 @@ local function handle_markdown(node)
 end
 
 local function handle_executable(node)
-	return {{ BashExec = node.absolute_path .. " ; (read -n 1 -s && read -k)" }}
+	return {{ BashExec = node.absolute_path .. ' ; read -p "[enter to continue]"' }}
 end
 
 local function handle_custom(node, command)
