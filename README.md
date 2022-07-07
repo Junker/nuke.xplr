@@ -54,7 +54,7 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   })
   ```
 
-### Usage
+## Usage
   
   ```lua
   require("nuke").setup()
