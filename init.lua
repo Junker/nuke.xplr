@@ -134,9 +134,7 @@ local function handle_markdown(node)
 end
 
 local function handle_executable(node)
-	if program_exists("dialog") then
-		return {{ BashExec = 'dialog --defaultno --yesno "Run executable?" 15 40 && ' .. node.absolute_path .. " ; (read -n 1 -s && read -k)" }}
-	end
+	return {{ BashExec = node.absolute_path .. " ; (read -n 1 -s && read -k)" }}
 end
 
 local function handle_custom(node, command)
@@ -167,10 +165,6 @@ local function handle_node(ctx)
 					return handle_custom(node, command)
 				end
 			end
-		end
-
-		if run_executables and node.permissions.user_execute or node.permissions.group_execute or node.permissions.other_execute then
-			return handle_executable(node)
 		end
 
 		if node_mime == "image/vnd.djvu" then
@@ -211,6 +205,10 @@ local function handle_node(ctx)
 			if node_mime == v then
 				return handle_open_document(node)
 			end
+		end
+
+		if run_executables and node.permissions.user_execute or node.permissions.group_execute or node.permissions.other_execute then
+			return handle_executable(node)
 		end
 	end
 end
