@@ -36,6 +36,53 @@ local pager = "less -R"
 local custom_commands = {}
 local run_executables = true
 
+local function table_to_string(t, delimiter)
+	local str = ""
+	for i,v in ipairs(t) do
+		str = str .. v
+		if t[i+1] ~= nil then
+			str = str .. delimiter
+		end
+	end
+
+	return str
+end
+
+local function exec(command, node, ...)
+	local args = {...}
+
+
+	if args[1] ~= nil then
+		local t = args
+		table.insert(t, node.absolute_path)
+		return {{ Call = {command = command, args = t} }}
+	else
+		return {{ Call = {command = command, args = {node.absolute_path}} }}
+	end
+end
+
+local function exec_paging(command, node, ...)
+	local args = {...}
+
+	if args[1] ~= nil then
+		return {{ BashExec = command .. " " .. table_to_string(args, " ") .. ' "' .. node.absolute_path .. '" | ' .. pager }}
+	else
+		return {{ BashExec = command .. ' "' .. node.absolute_path .. '" | ' .. pager }}
+	end
+end
+
+local function exec_waiting(command, node, ...)
+	local args = {...}
+
+	local waiting = 'read -p "[enter to continue]"'
+
+	if args[1] ~= nil then
+		return {{ BashExec = command .. " " .. table_to_string(args, " ") .. ' "' .. node.absolute_path .. '" && ' .. waiting }}
+	else
+		return {{ BashExec = command .. ' "' .. node.absolute_path .. '" && ' .. waiting }}
+	end
+end
+
 local function program_exists(p)
 	return (os.execute("type " .. p .. " > /dev/null 2>&1") == 0)
 end
@@ -46,22 +93,22 @@ end
 
 local function handle_image(node)
 	if program_exists("viu") then
-		return {{ BashExec = 'viu "' .. node.absolute_path .. '" && read -n 1 -s && read -k' }}
+		return exec_waiting("viu", node)
 	end
 	if program_exists("timg") then
-		return {{ BashExec = 'timg "' .. node.absolute_path .. '" && read -n 1 -s && read -k' }}
+		return exec_waiting("timg", node)
 	end
 	if program_exists("chafa") then
-		return {{ BashExec = 'chafa "' .. node.absolute_path .. '" && read -n 1 -s && read -k' }}
+		return exec_waiting("chafa", node)
 	end
 	if program_exists("img2txt") then
-		return {{ BashExec = 'img2txt --gamma=0.6 -- "' .. node.absolute_path .. '" | ' .. pager }}
+		return exec_paging("img2txt", node, "--gamma=0.6", "--")
 	end
 end
 
 local function handle_video(node)
 	if program_exists("mpv") then
-		return {{ Call = {command = "mpv", args = {"--vo=tct", "--quiet", node.absolute_path}} }}
+		return exec("mpv", node, "--vo=tct", "--quiet")
 	end
 	if program_exists("mplayer") then
 		return {{ BashExec = 'CACA_DRIVER=ncurses mplayer -vo caca -quiet "' .. node.absolute_path .. '"' }}
@@ -70,27 +117,27 @@ end
 
 local function handle_audio(node)
 	if program_exists("mpv") then
-		return {{ Call = {command = "mpv", args = {node.absolute_path}} }}
+		return exec("mpv", node)
 	elseif program_exists("mplayer") then
-		return {{ Call = {command = "mplayer", args = {node.absolute_path}} }}
+		return exec("mplayer", node)
 	end
 end
 
 local function handle_archive(node)
 	if program_exists("atool") then
-		return {{ BashExec = 'atool --list -- "' .. node.absolute_path .. '" | ' .. pager }}
+		return exec_paging("atool", node, "--list", "--")
 	end
 	if program_exists("dtrx") then
-		return {{ BashExec = 'dtrx -l "' .. node.absolute_path .. '" | ' .. pager }}
+		return exec_paging("dtrx", node, "-l")
 	end
 	if program_exists("ouch") then
-		return {{ BashExec = 'ouch list "' .. node.absolute_path .. '" | ' .. pager }}
+		return exec_paging("dtrx", node, "list")
 	end
 end
 
 local function handle_pdf(node)
 	if program_exists("termpdf") and os.getenv("TERM") == "xterm-kitty" then
-		return {{ Call = {command = "termpdf", args = {node.absolute_path}} }}
+		return exec("termpdf", node)
 	elseif program_exists("pdftotext") then
 		return {{ BashExec = 'pdftotext -l 10 -nopgbrk -q -- "' .. node.absolute_path .. '" - | ' .. pager }}
 	end
@@ -98,38 +145,38 @@ end
 
 local function handle_djvu(node)
 	if program_exists("termpdf") and os.getenv("TERM") == "xterm-kitty" then
-		return {{ Call = {command = "termpdf", args = {node.absolute_path}} }}
+		return exec("termpdf", node)
 	end
 end
 
 local function handle_text(node)
 	if program_exists(os.getenv("EDITOR")) then
-		return {{ Call = {command = os.getenv("EDITOR"), args = {node.absolute_path}} }}
+		return exec(os.getenv("EDITOR"), node)
 	end
 end
 
 local function handle_open_document(node)
 	if program_exists("odt2txt") then
-		return {{ BashExec = 'odt2txt "' .. node.absolute_path .. '" | ' .. pager }}
+		return exec_paging("odt2txt", node)
 	end
 end
 
 local function handle_html(node)
 	if program_exists("w3m") then
-		return {{ Call = {command = "w3m", args = {"-dump", node.absolute_path}} }}
+		return exec_paging("w3m", node, "-dump")
 	elseif program_exists("lynx") then
-		return {{ Call = {command = "lynx", args = {"-dump", "--", node.absolute_path}} }}
+		return exec_paging("lynx", node, "-dump", "--")
 	elseif program_exists("elinks") then
-		return {{ Call = {command = "elinks", args = {"-dump", node.absolute_path}} }}
+		return exec_paging("elinks", node, "-dump")
 	end
 end
 
 
 local function handle_markdown(node)
 	if program_exists("glow") then
-		return {{ BashExec = 'glow -sdark "' .. node.absolute_path .. '" | ' .. pager }}
+		return exec_paging("glow", node, "-sdark")
 	elseif program_exists("lowdown") then
-		return {{ BashExec = 'lowdown -Tterm "' .. node.absolute_path .. '" | ' .. pager }}
+		return exec_paging("lowdown", node, "-Tterm")
 	end
 end
 
