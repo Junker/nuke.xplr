@@ -118,7 +118,7 @@ local function handle_audio(node)
 	if program_exists("mpv") then
 		return exec("mpv", node)
 	elseif program_exists("mplayer") then
-		return exec("mplayer", node)
+		return exec("mplayer", node, "-vo null")
 	end
 end
 
@@ -130,7 +130,7 @@ local function handle_archive(node)
 		return exec_paging("dtrx", node, "-l")
 	end
 	if program_exists("ouch") then
-		return exec_paging("dtrx", node, "list")
+		return exec_paging("ouch", node, "list")
 	end
 end
 
