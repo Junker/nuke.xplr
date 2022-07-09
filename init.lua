@@ -49,37 +49,29 @@ local function table_to_string(t, delimiter)
 end
 
 local function exec(command, node, ...)
-	local args = {...}
-
-	if args[1] ~= nil then
-		local t = args
-		table.insert(t, node.absolute_path)
-		return {{ Call = {command = command, args = t} }}
-	else
-		return {{ Call = {command = command, args = {node.absolute_path}} }}
-	end
+	return {{ Call = {command = command, args = {node.absolute_path, ...}} }}
 end
 
 local function exec_paging(command, node, ...)
 	local args = {...}
+	local str_args = ""
 
 	if args[1] ~= nil then
-		return {{ BashExec = command .. " " .. table_to_string(args, " ") .. ' "' .. node.absolute_path .. '" | ' .. pager }}
-	else
-		return {{ BashExec = command .. ' "' .. node.absolute_path .. '" | ' .. pager }}
+		str_args = table_to_string(args, " ")
 	end
+
+	return {{ BashExec = string.format('%s %s "%s" | %s', command, str_args, node.absolute_path, pager) }}
 end
 
 local function exec_waiting(command, node, ...)
 	local args = {...}
-
-	local waiting = 'read -p "[enter to continue]"'
+	local str_args = ""
 
 	if args[1] ~= nil then
-		return {{ BashExec = command .. " " .. table_to_string(args, " ") .. ' "' .. node.absolute_path .. '" && ' .. waiting }}
-	else
-		return {{ BashExec = command .. ' "' .. node.absolute_path .. '" && ' .. waiting }}
+		str_args = table_to_string(args, " ")
 	end
+
+	return {{ BashExec = string.format('%s %s "%s" && read -p "[enter to continue]"', command, str_args, node.absolute_path) }}
 end
 
 local function program_exists(p)
@@ -93,14 +85,11 @@ end
 local function handle_image(node)
 	if program_exists("viu") then
 		return exec_waiting("viu", node)
-	end
-	if program_exists("timg") then
+	elseif program_exists("timg") then
 		return exec_waiting("timg", node)
-	end
-	if program_exists("chafa") then
+	elseif program_exists("chafa") then
 		return exec_waiting("chafa", node)
-	end
-	if program_exists("img2txt") then
+	elseif program_exists("img2txt") then
 		return exec_paging("img2txt", node, "--gamma=0.6", "--")
 	end
 end
@@ -108,8 +97,7 @@ end
 local function handle_video(node)
 	if program_exists("mpv") then
 		return exec("mpv", node, "--vo=tct", "--quiet")
-	end
-	if program_exists("mplayer") then
+	elseif program_exists("mplayer") then
 		return {{ BashExec = 'CACA_DRIVER=ncurses mplayer -vo caca -quiet "' .. node.absolute_path .. '"' }}
 	end
 end
@@ -125,8 +113,7 @@ end
 local function handle_archive(node)
 	if program_exists("atool") then
 		return exec_paging("atool", node, "--list", "--")
-	end
-	if program_exists("dtrx") then
+	elseif program_exists("dtrx") then
 		return exec_paging("dtrx", node, "-l")
 	end
 	if program_exists("ouch") then
