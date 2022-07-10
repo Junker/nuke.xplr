@@ -22,16 +22,11 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   | MS xls     |                         | xlhtml/xls2csv           |                   |
   | MS xlsx    |                         | libreoffice              |                   |
   | Epub       |                         |                          | einfo             |
-  *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
-- Hex view:
-  | File type | Program                   |
-  |:----------|:--------------------------|
-  | *         | hx/hexyl/huxd/hxl/hexdump |
 
-- View:
-  | File type | Program             |
-  |:----------|:--------------------|
-  | *         | bat/pygmentize/less |
+  *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
+
+**View:** bat/pygmentize/less
+**Hex view:** hx/hexyl/huxd/hxl/hexdump
 
 ## Installation
 
