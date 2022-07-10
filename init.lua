@@ -33,8 +33,71 @@ local open_document_mime_types = {
 }
 
 local pager = "less -R"
-local custom_commands = {}
+local open_custom_commands = {}
 local run_executables = true
+local show_line_numbers = false
+
+local nuke_mode = {
+	name = "nuke",
+	key_bindings = {
+		on_key = {
+			["o"] = {
+				help = "open",
+				messages = {
+					{ CallLuaSilently = "custom.nuke_open" },
+					"PopMode",
+
+				},
+			},
+			["v"] = {
+				help = "view",
+				messages = {
+					{ CallLuaSilently = "custom.nuke_view" },
+					"PopMode",
+
+				},
+			},
+			["s"] = {
+				help = "smart view",
+				messages = {
+					{ CallLuaSilently = "custom.nuke_smart_view" },
+					"PopMode",
+				},
+			},
+			["h"] = {
+				help = "hex view",
+				messages = {
+					{ CallLuaSilently = "custom.nuke_hex_view" },
+					"PopMode",
+				},
+			},
+			["i"] = {
+				help = "info view",
+				messages = {
+					{ CallLuaSilently = "custom.nuke_info_view" },
+					"PopMode",
+				},
+			},
+			esc = {
+				help = "cancel",
+				messages = {
+					"PopMode",
+				},
+			},
+		},
+	},
+}
+
+local function _if(bool, arg1, arg2)
+	if bool then return arg1 else return arg2 end
+end
+
+local function _case(case, cases)
+	local fn = cases[case]
+	if (fn) then
+		return fn()
+	end
+end
 
 local function table_to_string(t, delimiter)
 	local str = ""
@@ -56,9 +119,7 @@ local function exec_paging(command, node, ...)
 	local args = {...}
 	local str_args = ""
 
-	if args[1] ~= nil then
-		str_args = table_to_string(args, " ")
-	end
+	str_args = table_to_string(args, " ")
 
 	return {{ BashExec = string.format('%s %s "%s" | %s', command, str_args, node.absolute_path, pager) }}
 end
@@ -67,11 +128,29 @@ local function exec_waiting(command, node, ...)
 	local args = {...}
 	local str_args = ""
 
-	if args[1] ~= nil then
-		str_args = table_to_string(args, " ")
-	end
+	str_args = table_to_string(args, " ")
 
 	return {{ BashExec = string.format('%s %s "%s" && read -p "[enter to continue]"', command, str_args, node.absolute_path) }}
+end
+
+local function exec_paging_html(command, node, ...)
+	local args = {...}
+	local str_args = ""
+	local dumper = nil
+
+	str_args = table_to_string(args, " ")
+
+	if program_exists("w3m") then
+		dumper = 'w3m -T text/html -dump'
+	elseif program_exists("elinks") then
+		dumper = 'elinks -dump'
+	elseif program_exists("lynx") then
+		dumper = 'lynx -dump -stdin'
+	end
+
+	if dumper then
+		return {{ BashExec = string.format('%s %s "%s" | %s | %s', command, str_args, node.absolute_path, dumper, pager) }}
+	end
 end
 
 local function program_exists(p)
@@ -82,19 +161,19 @@ local function get_node_extension(node)
 	return node.relative_path:match("^.+%.(.+)$")
 end
 
-local function handle_image(node)
+local function open_image(node)
 	if program_exists("viu") then
 		return exec_waiting("viu", node)
 	elseif program_exists("timg") then
 		return exec_waiting("timg", node)
 	elseif program_exists("chafa") then
 		return exec_waiting("chafa", node)
-	elseif program_exists("img2txt") then
-		return exec_paging("img2txt", node, "--gamma=0.6", "--")
+	elseif program_exists("cacaview") then
+		return exec_paging("cacaview", node)
 	end
 end
 
-local function handle_video(node)
+local function open_video(node)
 	if program_exists("mpv") then
 		return exec("mpv", node, "--vo=tct", "--quiet")
 	elseif program_exists("mplayer") then
@@ -102,7 +181,7 @@ local function handle_video(node)
 	end
 end
 
-local function handle_audio(node)
+local function open_audio(node)
 	if program_exists("mpv") then
 		return exec("mpv", node)
 	elseif program_exists("mplayer") then
@@ -110,18 +189,7 @@ local function handle_audio(node)
 	end
 end
 
-local function handle_archive(node)
-	if program_exists("atool") then
-		return exec_paging("atool", node, "--list", "--")
-	elseif program_exists("dtrx") then
-		return exec_paging("dtrx", node, "-l")
-	end
-	if program_exists("ouch") then
-		return exec_paging("ouch", node, "list")
-	end
-end
-
-local function handle_pdf(node)
+local function open_pdf(node)
 	if program_exists("termpdf") and os.getenv("TERM") == "xterm-kitty" then
 		return exec("termpdf", node)
 	elseif program_exists("pdftotext") then
@@ -129,54 +197,29 @@ local function handle_pdf(node)
 	end
 end
 
-local function handle_djvu(node)
+local function open_djvu(node)
 	if program_exists("termpdf") and os.getenv("TERM") == "xterm-kitty" then
 		return exec("termpdf", node)
 	end
 end
 
-local function handle_text(node)
+local function open_text(node)
 	if program_exists(os.getenv("EDITOR")) then
 		return exec(os.getenv("EDITOR"), node)
 	end
 end
 
-local function handle_open_document(node)
-	if program_exists("odt2txt") then
-		return exec_paging("odt2txt", node)
-	end
-end
-
-local function handle_html(node)
-	if program_exists("w3m") then
-		return exec_paging("w3m", node, "-dump")
-	elseif program_exists("lynx") then
-		return exec_paging("lynx", node, "-dump", "--")
-	elseif program_exists("elinks") then
-		return exec_paging("elinks", node, "-dump")
-	end
-end
-
-
-local function handle_markdown(node)
-	if program_exists("glow") then
-		return exec_paging("glow", node, "-sdark")
-	elseif program_exists("lowdown") then
-		return exec_paging("lowdown", node, "-Tterm")
-	end
-end
-
-local function handle_executable(node)
+local function open_executable(node)
 	return {{ BashExec = node.absolute_path .. ' ; read -p "[enter to continue]"' }}
 end
 
-local function handle_custom(node, command)
+local function open_custom(node, command)
 	command = command:gsub("{}", '"' .. node.absolute_path .. '"')
 
 	return {{ BashExec = command }}
 end
 
-local function handle_node(ctx)
+local function open(ctx)
 	local node = ctx.focused_node
 	local node_mime = node.mime_essence
 
@@ -185,81 +228,313 @@ local function handle_node(ctx)
 	end
 
 	if node.is_dir == false or (node.is_symlink and node.symlink.is_dir == false) then
-		for _,entry in ipairs(custom_commands) do
+		for _,entry in ipairs(open_custom_commands) do
 			local command = entry["command"]
 			if command ~= nil then
 				if get_node_extension(node) == entry["extension"] then
-					return handle_custom(node, command)
+					return open_custom(node, command)
 				end
 				if node_mime == entry["mime"] then
-					return handle_custom(node, command)
+					return open_custom(node, command)
 				end
 				if entry["mime_regex"] ~= nil and node_mime:match(entry["mime_regex"]) then
-					return handle_custom(node, command)
+					return open_custom(node, command)
 				end
 			end
 		end
 
 		if node_mime == "image/vnd.djvu" then
-			return handle_djvu(node)
-		end
-
-		if node_mime:match("^image/.*") then
-			return handle_image(node)
-		end
-
-		if node_mime:match("^video/.*") then
-			return handle_video(node)
-		end
-
-		if node_mime:match("^audio/.*") then
-			return handle_audio(node)
-		end
-
-		if node_mime == "application/pdf" then
-			return handle_pdf(node)
-		end
-
-		if node_mime == "text/markdown" then
-			return handle_markdown(node)
-		end
-
-		if node_mime == "text/html" or node_mime == "application/xhtml+xml" then
-			return handle_html(node)
-		end
-
-		for _,v in ipairs(archive_mime_types) do
-			if node_mime == v then
-				return handle_archive(node)
-			end
-		end
-
-		for _,v in ipairs(open_document_mime_types) do
-			if node_mime == v then
-				return handle_open_document(node)
-			end
+			return open_djvu(node)
+		elseif node_mime:match("^image/.*") then
+			return open_image(node)
+		elseif node_mime:match("^video/.*") then
+			return open_video(node)
+		elseif node_mime:match("^audio/.*") then
+			return open_audio(node)
+		elseif node_mime == "application/pdf" then
+			return open_pdf(node)
 		end
 
 		if run_executables and node.permissions.user_execute or node.permissions.group_execute or node.permissions.other_execute then
-			return handle_executable(node)
+			return open_executable(node)
 		end
 	end
 end
 
 
+local function hex_view(ctx)
+	local node = ctx.focused_node
+
+	if node.is_dir == false or (node.is_symlink and node.symlink.is_dir == false) then
+		if program_exists("hx") then
+			return exec_paging("hx", node, "-t 1")
+		elseif program_exists("hexyl") then
+			return exec_paging("hexyl", node)
+		elseif program_exists("huxd") then
+			return exec_paging("huxd", node, "-C always", "-P never")
+		elseif program_exists("hxl") then
+			return exec_paging("hxl", node)
+		elseif program_exists("hexdump") then
+			return exec_paging("hexdump", node)
+		end
+	end
+end
+
+local function view_node(node)
+	if program_exists("bat") then
+		return exec_paging("bat", node, "--color always", "--paging never", "-A", _if(show_line_numbers, "--style=plain,numbers", "--style=plain"))
+	end
+	if program_exists("pygmentize") then
+		return exec_paging("pygmentize", node, "-g")
+	end
+
+	return exec_paging("less", node, _if(show_line_numbers, "-N", ""))
+end
+
+local function view(ctx)
+	local node = ctx.focused_node
+
+	if node.is_dir == false or (node.is_symlink and node.symlink.is_dir == false) then
+		return view_node(node)
+	end
+end
+
+
+local function info_view_node(node)
+	if program_exists("exiftool") then
+		return exec_paging("exiftool", node)
+	end
+
+	return exec_paging("file", node)
+end
+
+local function info_view_image(node)
+	if program_exists("mediainfo") then
+		return exec_paging("mediainfo", node)
+	end
+
+	return info_view_node(node)
+end
+
+local function info_view_video(node)
+	if program_exists("mediainfo") then
+		return exec_paging("mediainfo", node)
+	elseif program_exists("mplayer") then
+		return exec_paging("mplayer", node, "-identify", "-vo null", "-ao null", "-frames 0")
+	end
+
+	return info_view_node(node)
+end
+
+local function info_view_epub(node)
+	if program_exists("einfo") then
+		return exec_paging("einfo", node, "-v");
+	end
+end
+
+
+local function info_view(ctx)
+	local node = ctx.focused_node
+	local node_mime = node.mime_essence
+
+	if node.is_dir == false or (node.is_symlink and node.symlink.is_dir == false) then
+		if node_mime:match("^image/.*") then
+			return info_view_image(node)
+		end
+		if node_mime:match("^video/.*") then
+			return info_view_video(node)
+		end
+		if node_mime == "application/epub+zip" then
+			return info_view_epub(node)
+		end
+
+		return info_view_node(node)
+	end
+end
+
+local function smart_view_archive(node)
+	if program_exists("atool") then
+		return exec_paging("atool", node, "--list", "--")
+	end
+end
+
+local function smart_view_open_document(node)
+	if program_exists("odt2txt") then
+		return exec_paging("odt2txt", node)
+	end
+end
+
+local function smart_view_man(node)
+	return {{ BashExec = 'MANROFFOPT=-c MAN_KEEP_FORMATTING=1 man -P cat "' .. node.absolute_path .. '" | ' .. pager }}
+end
+
+local function smart_view_pdf(node)
+	if program_exists("pdftotext") then
+		return {{ BashExec = 'pdftotext -l 10 -nopgbrk -q -- "' .. node.absolute_path .. '" - | ' .. pager }}
+	end
+end
+
+local function smart_view_ps(node)
+	if program_exists("ps2ascii") then
+		return exec_paging("ps2ascii", node);
+	end
+end
+
+local function smart_view_image(node)
+	if program_exists("viu") then
+		return exec_paging("viu", node, "-b", "-s");
+	elseif program_exists("chafa") then
+		return exec_paging("chafa", node, "--animate=false", "--format=symbols");
+	elseif program_exists("catimg") then
+		return exec_paging("catimg", node);
+	elseif program_exists("img2txt") then
+		return exec_paging("img2txt", node, "--gamma=0.6", "--")
+	end
+
+	return info_view_image(node)
+end
+
+local function smart_view_md(node)
+	if program_exists("glow") then
+		return exec_paging("glow", node, "-sdark")
+	elseif program_exists("lowdown") then
+		return exec_paging("lowdown", node, "-Tterm")
+	elseif program_exists("mdless") then
+		return {{ Call = {command="mdless", args={node.absolute_path}} }}
+	end
+end
+
+local function smart_view_djvu(node)
+	if program_exists("djvused") then
+		return exec_paging("djvused", node, "-e print-pure-txt");
+	end
+end
+
+local function smart_view_html(node)
+	return exec_paging_html("cat", node)
+end
+
+local function smart_view_doc(node)
+	if program_exists("antiword") then
+		return exec_paging("antiword", node, "-t");
+	elseif program_exists("catdoc") then
+		return exec_paging("catdoc", node, "-w");
+	elseif program_exists("wvWare") then
+		return exec_paging_html("wvWare", node)
+	end
+end
+
+local function smart_view_docx(node)
+	if program_exists("lowriter") then
+		return {{ BashExec = 'VIEWRTMP=`mktemp -q -d ${TMPDIR:-/tmp}/xplr-nuke.XXXXXX` && cp "'
+					  .. node.absolute_path
+					  .. '" $VIEWRTMP/temp.docx && cd $VIEWRTMP && libreoffice --headless --convert-to txt $VIEWRTMP/temp.docx > /dev/null 2>&1 && cat $VIEWRTMP/temp.txt | '
+					  .. pager .. ' && rm -rf "$VIEWRTMP"'}}
+	end
+end
+
+local function smart_view_xlsx(node)
+	if program_exists("lowriter") then
+		local cmd = 'VIEWRTMP=`mktemp -q -d ${TMPDIR:-/tmp}/xplr-nuke.XXXXXX` && cp "'
+			.. node.absolute_path
+			.. '" $VIEWRTMP/temp.xlsx && cd $VIEWRTMP && libreoffice --headless --convert-to html $VIEWRTMP/temp.xlsx > /dev/null 2>&1 '
+			.. '&& cat $VIEWRTMP/temp.html | %s | ' .. pager
+			.. ' && rm -rf "$VIEWRTMP"'
+
+		if program_exists("w3m") then
+			return {{ BashExec = string.format(cmd, "w3m -T text/html -dump") }}
+		elseif program_exists("elinks") then
+			return {{ BashExec = string.format(cmd, "elinks -dump") }}
+		elseif program_exists("lynx") then
+			return {{ BashExec = string.format(cmd, "lynx -dump -stdin") }}
+		end
+	end
+end
+
+local function smart_view_xls(node)
+	if program_exists("xlhtml") then
+		return exec_paging_html("xlhtml", node, "-a")
+	end
+
+	if program_exists("xls2csv") then
+		return exec_paging("xls2csv", node);
+	end
+end
+
+local function smart_view(ctx)
+	local node = ctx.focused_node
+	local node_mime = node.mime_essence
+
+	if node.is_dir == false or (node.is_symlink and node.symlink.is_dir == false) then
+		local cases = {
+			["application/x-troff-man"] = function() return smart_view_man(node) or view_node(node) end,
+			["application/pdf"] = function() return smart_view_pdf(node) end,
+			["application/postscript"] = function() return smart_view_ps(node) end,
+			["text/plain"] = function() return view_node(node) end,
+			["text/markdown"] = function() return smart_view_md(node) or view_node(node) end,
+			["text/html"] = function() return smart_view_html(node) or view_node(node) end,
+			["application/xhtml+xml"] = function() return smart_view_html(node) or view_node(node) end,
+			["image/vnd.djvu"] = function() return smart_view_djvu(node) end,
+			["application/msword"] = function() return smart_view_doc(node) end,
+			["application/vnd.openxmlformats-officedocument.wordprocessingml.document"] = function() return smart_view_docx(node) end,
+			["application/vnd.ms-excel"] = function() return smart_view_xls(node) end,
+			["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] = function() return smart_view_xlsx(node) end,
+			["application/epub+zip"] = function() return info_view_epub(node) end,
+		}
+
+		local res = _case(node_mime, cases);
+		if res then return res end
+
+		if node_mime:match("^image/.*") then
+			return smart_view_image(node)
+		end
+		if node_mime:match("^video/.*") then
+			return info_view_video(node)
+		end
+
+		for smart_view_,v in ipairs(archive_mime_types) do
+			if node_mime == v then
+				return smart_view_archive(node)
+			end
+		end
+
+		for smart_view_,v in ipairs(open_document_mime_types) do
+			if node_mime == v then
+				return smart_view_open_document(node)
+			end
+		end
+
+		return info_view_node(node)
+	end
+end
+
+
 local function setup(args)
-	xplr.fn.custom.nuke_handle_node = handle_node
+	xplr.config.modes.custom.nuke = nuke_mode
+	xplr.fn.custom.nuke_view = view
+	xplr.fn.custom.nuke_hex_view = hex_view
+	xplr.fn.custom.nuke_info_view = info_view
+	xplr.fn.custom.nuke_smart_view = smart_view
+	xplr.fn.custom.nuke_open = open
 
 	if args.pager then
 		pager = args.pager
 	end
 
-	if args.custom then
-		custom_commands = args.custom
+	if args.view then
+		if args.view.show_line_numbers then
+			show_line_numbers = args.view.show_line_numbers
+		end
 	end
 
-	if args.run_executables  then
-		run_executables = args.run_executables
+	if args.open then
+		if args.custom then
+			open_custom_commands = args.custom
+		end
+
+		if args.run_executables  then
+			run_executables = args.run_executables
+		end
 	end
 end
 

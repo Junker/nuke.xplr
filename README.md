@@ -1,22 +1,41 @@
-# Nuke: xplr file opener
+# Nuke: xplr file viwer and opener
 
-Plugin for [xplr](https://github.com/sayanarijit/xplr): open files in apps by file type or mime
+Plugin for [xplr](https://github.com/sayanarijit/xplr): view and open files in apps by file type or mime
 
 inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https://github.com/jarun/nnn/blob/master/plugins/nuke).
 
 ## Requirements
 
-| File type    | Program                |
-|:-------------|:-----------------------|
-| Image        | viu/timg/chafa/img2txt |
-| Video        | mpv/mplayer            |
-| Audio        | mpv/mplayer            |
-| Archive      | atool/dtrx/ouch        |
-| OpenDocument | odt2txt                |
-| HTML         | w3m/lynx/elinks        |
-| PDF          | termpdf/pdftotext      |
-| DJVU         | termpdf                |
-| Markdown     | glow/lowdown           |
+- Open file:
+  | File type | Program                 |
+  |:----------|:------------------------|
+  | Image     | viu/timg/chafa/cacaview |
+  | Video     | mpv/mplayer             |
+  | Audio     | mpv/mplayer             |
+  | PDF       | termpdf                 |
+  | DJVU      | termpdf                 |
+
+- Smart View file:
+  | File type  | Program                  |
+  |:-----------|:-------------------------|
+  | Image      | viu/chafa/catimg/img2txt |
+  | PDF        | pdftotext                |
+  | PostScript | ps2ascii                 |
+  | DJVU       | djvused                  |
+  | Markdown   | glow/lowdown/mdless      |
+  | HTML       | w3m/elinks/lynx          |
+  | MS doc     | antiword/catdoc/wvWare   |
+  | MS docx    | libreoffice              |
+  | MS xls     | xlhtml/xls2csv           |
+  | MS xlsx    | libreoffice              |
+
+- Info View file:
+  | File type | Program           |
+  |:----------|:------------------|
+  | *         | exiftool/file     |
+  | Image     | mediainfo         |
+  | Video     | mediainfo/mplayer |
+  | Epub      | ebook-tools       |
 
 *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
 
@@ -45,38 +64,46 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   
 ### Install with [xpm](https://github.com/dtomvan/xpm.xplr)
 
-  ```lua
-  require("xpm").setup({
-    plugins = {
-      'dtomvan/xpm.xplr',
-      'Junker/nuke.xplr'
-    }
-  })
-  ```
+```lua
+require("xpm").setup({
+  plugins = {
+    'dtomvan/xpm.xplr',
+    'Junker/nuke.xplr'
+  }
+})
+```
 
 ## Usage
   
-  ```lua
-  require("nuke").setup()
+```lua
+require("nuke").setup()
 
-  -- Or
+-- Or
 
-  require("nuke").setup{
-    pager = "more", -- default: less -R
+require("nuke").setup{
+  pager = "more", -- default: less -R
+  open = {
     run_executables = true, -- default: false
     custom = {
       {extension = "jpg", command = "sxiv {}"},
-      {extension = "so", command = "ldd -r {} | less"},
       {mime = "video/mp4", command = "vlc {}"},
       {mime_regex = "^video/.*", command = "smplayer {}"}
       {mime_regex = ".*", command = "xdg-open {}"}
     }
+  },
+  view = {
+    show_line_numbers = true, -- default: false
   }
-  
-  xplr.config.modes.builtin.default.key_bindings.on_key["enter"] = {
-    help = "nuke",
-    messages = {
-      {CallLuaSilently = "custom.nuke_handle_node"}
-    }
-  }
-  ```
+}
+```
+
+### Key bindings
+
+```lua
+	key.v = {
+		help = "nuke",
+		messages = {"PopMode", {SwitchModeCustom = "nuke"}}
+	}
+	key["f3"] = xplr.config.modes.custom.nuke.key_bindings.on_key.v
+	key["enter"] = xplr.config.modes.custom.nuke.key_bindings.on_key.o
+```
