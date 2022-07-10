@@ -25,8 +25,8 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
 
   *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
 
-**View:** bat/pygmentize/less
-**Hex view:** hx/hexyl/huxd/hxl/hexdump
+- **View:** bat/pygmentize/less
+- **Hex view:** hx/hexyl/huxd/hxl/hexdump
 
 ## Installation
 
