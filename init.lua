@@ -111,6 +111,11 @@ local function table_to_string(t, delimiter)
 	return str
 end
 
+local function program_exists(p)
+	return (os.execute("type " .. p .. " > /dev/null 2>&1") == 0)
+end
+
+
 local function exec(command, node, ...)
 	return {{ Call = {command = command, args = {node.absolute_path, ...}} }}
 end
