@@ -6,39 +6,23 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
 
 ## Requirements
 
-- Open:
-  | File type | Program                 |
-  |:----------|:------------------------|
-  | Image     | viu/timg/chafa/cacaview |
-  | Video     | mpv/mplayer             |
-  | Audio     | mpv/mplayer             |
-  | PDF       | termpdf                 |
-  | DJVU      | termpdf                 |
-
+  | File type  | Open                    | Smart View               | Info view         |
+  |:-----------|:------------------------|:-------------------------|:------------------|
+  | *          |                         |                          | exiftool/file     |
+  | Image      | viu/timg/chafa/cacaview | viu/chafa/catimg/img2txt | mediainfo         |
+  | Video      | mpv/mplayer             |                          | mediainfo/mplayer |
+  | Audio      | mpv/mplayer             |                          |                   |
+  | PDF        | termpdf                 | pdftotext                |                   |
+  | DJVU       | termpdf                 | djvused                  |                   |
+  | PostScript |                         | ps2ascii                 |                   |
+  | Markdown   |                         | glow/lowdown/mdless      |                   |
+  | HTML       |                         | w3m/elinks/lynx          |                   |
+  | MS doc     |                         | antiword/catdoc/wvWare   |                   |
+  | MS docx    |                         | libreoffice              |                   |
+  | MS xls     |                         | xlhtml/xls2csv           |                   |
+  | MS xlsx    |                         | libreoffice              |                   |
+  | Epub       |                         |                          | einfo             |
   *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
-
-- Smart View:
-  | File type  | Program                  |
-  |:-----------|:-------------------------|
-  | Image      | viu/chafa/catimg/img2txt |
-  | PDF        | pdftotext                |
-  | PostScript | ps2ascii                 |
-  | DJVU       | djvused                  |
-  | Markdown   | glow/lowdown/mdless      |
-  | HTML       | w3m/elinks/lynx          |
-  | MS doc     | antiword/catdoc/wvWare   |
-  | MS docx    | libreoffice              |
-  | MS xls     | xlhtml/xls2csv           |
-  | MS xlsx    | libreoffice              |
-
-- Info View:
-  | File type | Program           |
-  |:----------|:------------------|
-  | *         | exiftool/file     |
-  | Image     | mediainfo         |
-  | Video     | mediainfo/mplayer |
-  | Epub      | ebook-tools       |
-
 - Hex view:
   | File type | Program                   |
   |:----------|:--------------------------|
