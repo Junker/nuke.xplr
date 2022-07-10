@@ -282,7 +282,7 @@ end
 
 local function view_node(node)
 	if program_exists("bat") then
-		return exec_paging("bat", node, "--color always", "--paging never", "-A", _if(show_line_numbers, "--style=plain,numbers", "--style=plain"))
+		return exec_paging("bat", node, "--color always", "--paging never", _if(show_line_numbers, "--style=plain,numbers", "--style=plain"))
 	end
 	if program_exists("pygmentize") then
 		return exec_paging("pygmentize", node, "-g")
