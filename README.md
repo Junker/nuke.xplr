@@ -1,4 +1,4 @@
-# Nuke: xplr file viwer and opener
+# Nuke: xplr file viewer and opener
 
 Plugin for [xplr](https://github.com/sayanarijit/xplr): view and open files in apps by file type or mime
 
