@@ -6,7 +6,7 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
 
 ## Requirements
 
-- Open file:
+- Open:
   | File type | Program                 |
   |:----------|:------------------------|
   | Image     | viu/timg/chafa/cacaview |
@@ -14,8 +14,9 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   | Audio     | mpv/mplayer             |
   | PDF       | termpdf                 |
   | DJVU      | termpdf                 |
+  *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
 
-- Smart View file:
+- Smart View:
   | File type  | Program                  |
   |:-----------|:-------------------------|
   | Image      | viu/chafa/catimg/img2txt |
@@ -29,7 +30,7 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   | MS xls     | xlhtml/xls2csv           |
   | MS xlsx    | libreoffice              |
 
-- Info View file:
+- Info View:
   | File type | Program           |
   |:----------|:------------------|
   | *         | exiftool/file     |
@@ -37,8 +38,16 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   | Video     | mediainfo/mplayer |
   | Epub      | ebook-tools       |
 
-*recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
+- Hex view:
+  | File type | Program                   |
+  |:----------|:--------------------------|
+  | *         | hx/hexyl/huxd/hxl/hexdump |
 
+- View:
+  | File type | Program             |
+  |:----------|:--------------------|
+  | *         | bat/pygmentize/less |
+ 
 ## Installation
 
 ### Install manually
