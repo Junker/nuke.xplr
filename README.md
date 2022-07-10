@@ -100,10 +100,12 @@ require("nuke").setup{
 ### Key bindings
 
 ```lua
-	key.v = {
-		help = "nuke",
-		messages = {"PopMode", {SwitchModeCustom = "nuke"}}
-	}
-	key["f3"] = xplr.config.modes.custom.nuke.key_bindings.on_key.v
-	key["enter"] = xplr.config.modes.custom.nuke.key_bindings.on_key.o
+  local key = xplr.config.modes.builtin.default.key_bindings.on_key
+  
+  key.v = {
+    help = "nuke",
+    messages = {"PopMode", {SwitchModeCustom = "nuke"}}
+  }
+  key["f3"] = xplr.config.modes.custom.nuke.key_bindings.on_key.v
+  key["enter"] = xplr.config.modes.custom.nuke.key_bindings.on_key.o
 ```
