@@ -4,30 +4,6 @@ Plugin for [xplr](https://github.com/sayanarijit/xplr): view and open files in a
 
 inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https://github.com/jarun/nnn/blob/master/plugins/nuke).
 
-## Requirements
-
-  | File type  | Open                    | Smart View               | Info view         |
-  |:-----------|:------------------------|:-------------------------|:------------------|
-  | *          |                         |                          | exiftool/file     |
-  | Image      | viu/timg/chafa/cacaview | viu/chafa/catimg/img2txt | mediainfo         |
-  | Video      | mpv/mplayer             |                          | mediainfo/mplayer |
-  | Audio      | mpv/mplayer             |                          |                   |
-  | PDF        | termpdf                 | pdftotext                |                   |
-  | DJVU       | termpdf                 | djvused                  |                   |
-  | PostScript |                         | ps2ascii                 |                   |
-  | Markdown   |                         | glow/lowdown/mdless      |                   |
-  | HTML       |                         | w3m/elinks/lynx          |                   |
-  | MS doc     |                         | antiword/catdoc/wvWare   |                   |
-  | MS docx    |                         | libreoffice              |                   |
-  | MS xls     |                         | xlhtml/xls2csv           |                   |
-  | MS xlsx    |                         | libreoffice              |                   |
-  | Epub       |                         |                          | einfo             |
-
-  *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
-
-- **View:** bat/pygmentize/less
-- **Hex view:** hx/hexyl/huxd/hxl/hexdump
-
 ## Installation
 
 ### Install manually
@@ -98,3 +74,27 @@ require("nuke").setup{
   key["f3"] = xplr.config.modes.custom.nuke.key_bindings.on_key.v
   key["enter"] = xplr.config.modes.custom.nuke.key_bindings.on_key.o
 ```
+
+## Recomended tools
+
+| File type  | Open                    | Smart View               | Info view         |
+|:-----------|:------------------------|:-------------------------|:------------------|
+| *          |                         |                          | exiftool/file     |
+| Image      | viu/timg/chafa/cacaview | viu/chafa/catimg/img2txt | mediainfo         |
+| Video      | mpv/mplayer             |                          | mediainfo/mplayer |
+| Audio      | mpv/mplayer             |                          |                   |
+| PDF        | termpdf                 | pdftotext                |                   |
+| DJVU       | termpdf                 | djvused                  |                   |
+| PostScript |                         | ps2ascii                 |                   |
+| Markdown   |                         | glow/lowdown/mdless      |                   |
+| HTML       |                         | w3m/elinks/lynx          |                   |
+| MS doc     |                         | antiword/catdoc/wvWare   |                   |
+| MS docx    |                         | libreoffice              |                   |
+| MS xls     |                         | xlhtml/xls2csv           |                   |
+| MS xlsx    |                         | libreoffice              |                   |
+| Epub       |                         |                          | einfo             |
+
+*recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
+
+**View:** bat/pygmentize/less \
+**Hex view:** hx/hexyl/huxd/hxl/hexdump
