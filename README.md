@@ -14,6 +14,7 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   | Audio     | mpv/mplayer             |
   | PDF       | termpdf                 |
   | DJVU      | termpdf                 |
+
   *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
 
 - Smart View:
@@ -47,7 +48,7 @@ inspired by [nnn](https://github.com/jarun/nnn) file manager [nuke plugin](https
   | File type | Program             |
   |:----------|:--------------------|
   | *         | bat/pygmentize/less |
- 
+
 ## Installation
 
 ### Install manually
