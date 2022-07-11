@@ -533,12 +533,15 @@ local function setup(args)
 	end
 
 	if args.open then
-		if args.custom then
-			open_custom_commands = args.custom
+		if args.open.custom then
+			open_custom_commands = args.open.custom
 		end
 
-		if args.run_executables  then
-			run_executables = args.run_executables
+		if args.open.run_executables  then
+			run_executables = args.open.run_executables
+		end
+	end
+
 		end
 	end
 end
