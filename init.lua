@@ -34,6 +34,7 @@ local open_document_mime_types = {
 
 local pager = "less -R"
 local open_custom_commands = {}
+local smart_custom_commands = {}
 local run_executables = true
 local show_line_numbers = false
 
@@ -158,6 +159,13 @@ local function exec_paging_html(command, node, ...)
 	end
 end
 
+local function exec_custom(command, node)
+	command = command:gsub("{}", '"' .. node.absolute_path .. '"')
+
+	return {{ BashExec = command }}
+end
+
+
 local function program_exists(p)
 	return (os.execute("type " .. p .. " > /dev/null 2>&1") == 0)
 end
@@ -218,11 +226,6 @@ local function open_executable(node)
 	return {{ BashExec = node.absolute_path .. ' ; read -p "[enter to continue]"' }}
 end
 
-local function open_custom(node, command)
-	command = command:gsub("{}", '"' .. node.absolute_path .. '"')
-
-	return {{ BashExec = command }}
-end
 
 local function open(ctx)
 	local node = ctx.focused_node
@@ -237,13 +240,13 @@ local function open(ctx)
 			local command = entry["command"]
 			if command ~= nil then
 				if get_node_extension(node) == entry["extension"] then
-					return open_custom(node, command)
+					return exec_custom(command, node)
 				end
 				if node_mime == entry["mime"] then
-					return open_custom(node, command)
+					return exec_custom(command, node)
 				end
 				if entry["mime_regex"] ~= nil and node_mime:match(entry["mime_regex"]) then
-					return open_custom(node, command)
+					return exec_custom(command, node)
 				end
 			end
 		end
@@ -471,6 +474,22 @@ local function smart_view(ctx)
 	local node_mime = node.mime_essence
 
 	if node.is_dir == false or (node.is_symlink and node.symlink.is_dir == false) then
+
+		for _,entry in ipairs(smart_custom_commands) do
+			local command = entry["command"]
+			if command ~= nil then
+				if get_node_extension(node) == entry["extension"] then
+					return exec_custom(command, node)
+				end
+				if node_mime == entry["mime"] then
+					return exec_custom(command, node)
+				end
+				if entry["mime_regex"] ~= nil and node_mime:match(entry["mime_regex"]) then
+					return exec_custom(command, node)
+				end
+			end
+		end
+
 		local cases = {
 			["application/x-troff-man"] = function() return smart_view_man(node) or view_node(node) end,
 			["application/pdf"] = function() return smart_view_pdf(node) end,
@@ -542,6 +561,9 @@ local function setup(args)
 		end
 	end
 
+	if args.smart_view then
+		if args.smart_view.custom then
+			smart_custom_commands = args.smart_view.custom
 		end
 	end
 end
