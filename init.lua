@@ -523,7 +523,6 @@ local function smart_view(ctx)
 			["application/x-troff-man"] = function() return smart_view_man(node) or view_node(node) end,
 			["application/pdf"] = function() return smart_view_pdf(node) end,
 			["application/postscript"] = function() return smart_view_ps(node) end,
-			["text/plain"] = function() return view_node(node) end,
 			["text/markdown"] = function() return smart_view_md(node) or view_node(node) end,
 			["text/html"] = function() return smart_view_html(node) or view_node(node) end,
 			["application/xhtml+xml"] = function() return smart_view_html(node) or view_node(node) end,
@@ -542,12 +541,18 @@ local function smart_view(ctx)
 			["fb2"] = function() return smart_view_fb2(node) end,
 		}
 
+		local res = _case(get_node_extension(node), cases);
+		if res then return res end
+
+
 		if node_mime:match("^image/.*") then
 			return smart_view_image(node)
 		elseif node_mime:match("^video/.*") then
 			return info_view_video(node)
 		elseif node_mime:match("^audio/.*") then
 			return info_view_audio(node)
+		elseif node_mime:match("^text/.*") then
+			return view_node(node)
 		end
 
 		for smart_view_,v in ipairs(archive_mime_types) do
