@@ -334,6 +334,17 @@ local function info_view_video(node)
 	return info_view_node(node)
 end
 
+local function info_view_audio(node)
+	if program_exists("mediainfo") then
+		return exec_paging("mediainfo", node)
+	elseif program_exists("mplayer") then
+		return exec_paging("mplayer", node, "-identify", "-vo null", "-ao null", "-frames 0")
+	end
+
+	return info_view_node(node)
+end
+
+
 local function info_view_epub(node)
 	if program_exists("einfo") then
 		return exec_paging("einfo", node, "-v");
@@ -511,9 +522,10 @@ local function smart_view(ctx)
 
 		if node_mime:match("^image/.*") then
 			return smart_view_image(node)
-		end
-		if node_mime:match("^video/.*") then
+		elseif node_mime:match("^video/.*") then
 			return info_view_video(node)
+		elseif node_mime:match("^audio/.*") then
+			return info_view_audio(node)
 		end
 
 		for smart_view_,v in ipairs(archive_mime_types) do
