@@ -444,7 +444,9 @@ local function smart_view_doc(node)
 end
 
 local function smart_view_docx(node)
-	if program_exists("lowriter") then
+	if program_exists("pandoc") then
+		return exec_paging("pandoc", node, "-o -", "-t plain")
+	elseif program_exists("lowriter") then
 		return {{ BashExec = 'VIEWRTMP=`mktemp -q -d ${TMPDIR:-/tmp}/xplr-nuke.XXXXXX` && cp "'
 					  .. node.absolute_path
 					  .. '" $VIEWRTMP/temp.docx && cd $VIEWRTMP && libreoffice --headless --convert-to txt $VIEWRTMP/temp.docx > /dev/null 2>&1 && cat $VIEWRTMP/temp.txt | '
@@ -478,6 +480,22 @@ local function smart_view_xls(node)
 	if program_exists("xls2csv") then
 		return exec_paging("xls2csv", node);
 	end
+end
+
+local function smart_view_epub(node)
+	if program_exists("pandoc") then
+		return exec_paging("pandoc", node, "-o -", "-t plain")
+	end
+
+	return info_view_epub(node)
+end
+
+local function smart_view_fb2(node)
+	if program_exists("pandoc") then
+		return exec_paging("pandoc", node, "-o -", "-t plain")
+	end
+
+	return info_view_epub(node)
 end
 
 local function smart_view(ctx)
@@ -514,11 +532,15 @@ local function smart_view(ctx)
 			["application/vnd.openxmlformats-officedocument.wordprocessingml.document"] = function() return smart_view_docx(node) end,
 			["application/vnd.ms-excel"] = function() return smart_view_xls(node) end,
 			["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] = function() return smart_view_xlsx(node) end,
-			["application/epub+zip"] = function() return info_view_epub(node) end,
+			["application/epub+zip"] = function() return smart_view_epub(node) end,
 		}
 
 		local res = _case(node_mime, cases);
 		if res then return res end
+
+		local cases = {
+			["fb2"] = function() return smart_view_fb2(node) end,
+		}
 
 		if node_mime:match("^image/.*") then
 			return smart_view_image(node)

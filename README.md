@@ -93,10 +93,10 @@ require("nuke").setup{
 | Markdown   |                         | glow/lowdown/mdless      |                   |
 | HTML       |                         | w3m/elinks/lynx          |                   |
 | MS doc     |                         | antiword/catdoc/wvWare   |                   |
-| MS docx    |                         | libreoffice              |                   |
+| MS docx    |                         | pandoc/libreoffice       |                   |
 | MS xls     |                         | xlhtml/xls2csv           |                   |
 | MS xlsx    |                         | libreoffice              |                   |
-| Epub       |                         |                          | einfo             |
+| Epub       |                         | pandoc                   | einfo             |
 
 *recomended terminal emulator with support of [Terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/)*
 
