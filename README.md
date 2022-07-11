@@ -58,7 +58,11 @@ require("nuke").setup{
   },
   view = {
     show_line_numbers = true, -- default: false
-  }
+  },
+  smart_view = {
+    custom = {
+      {extension = "so", command = "ldd -r {} | less"},
+    }
 }
 ```
 
@@ -82,10 +86,10 @@ require("nuke").setup{
 | *          |                         |                          | exiftool/file     |
 | Image      | viu/timg/chafa/cacaview | viu/chafa/catimg/img2txt | mediainfo         |
 | Video      | mpv/mplayer             |                          | mediainfo/mplayer |
-| Audio      | mpv/mplayer             |                          |                   |
-| PDF        | termpdf                 | pdftotext                |                   |
-| DJVU       | termpdf                 | djvused                  |                   |
-| PostScript |                         | ps2ascii                 |                   |
+| Audio      | mpv/mplayer             |                          | mediainfo/mplayer |
+| PDF        | termpdf                 | pdftotext                | exiftool          |
+| DJVU       | termpdf                 | djvused                  | exiftool          |
+| PostScript |                         | ps2ascii                 | exiftool          |
 | Markdown   |                         | glow/lowdown/mdless      |                   |
 | HTML       |                         | w3m/elinks/lynx          |                   |
 | MS doc     |                         | antiword/catdoc/wvWare   |                   |
