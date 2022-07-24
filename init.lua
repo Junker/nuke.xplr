@@ -579,6 +579,10 @@ local function setup(args)
 	xplr.fn.custom.nuke_info_view = info_view
 	xplr.fn.custom.nuke_smart_view = smart_view
 	xplr.fn.custom.nuke_open = open
+	
+	if args == nil then
+		args = {}
+	end
 
 	if args.pager then
 		pager = args.pager
