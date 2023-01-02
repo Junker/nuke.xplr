@@ -271,7 +271,10 @@ local function open(ctx)
 			return open_audio(node)
 		elseif node_mime == "application/pdf" then
 			return open_pdf(node)
-		elseif node_mime:match("^(text|application)/.*") and not (has_value(archive_mime_types, node_mime) or has_value(open_document_mime_types, node_mime) then
+		elseif node_mime:match("^text/.*") or
+			(node_mime:match("^application/.*") and
+				not (has_value(archive_mime_types, node_mime) or
+					has_value(open_document_mime_types, node_mime))) then
 			return open_text(node)
 		end
 
