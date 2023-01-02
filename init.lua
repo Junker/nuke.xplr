@@ -100,6 +100,16 @@ local function _case(case, cases)
 	end
 end
 
+local function has_value (t, val)
+    for index, value in ipairs(t) do
+        if value == val then
+            return true
+        end
+    end
+
+    return false
+end
+
 local function table_to_string(t, delimiter)
 	local str = ""
 	for i,v in ipairs(t) do
@@ -261,6 +271,14 @@ local function open(ctx)
 			return open_audio(node)
 		elseif node_mime == "application/pdf" then
 			return open_pdf(node)
+		elseif node_mime:match("^text/.*") or
+			(node_mime:match("^application/.*") and
+				not (node_mime == "application/ogg"
+					or node_mime == "application/msword"
+					or node_mime == "application/epub+zip"
+					or node_mime:match("^application/vnd.*")
+					or has_value(archive_mime_types, node_mime))) then
+			return open_text(node)
 		end
 
 		if run_executables and node.permissions.user_execute or node.permissions.group_execute or node.permissions.other_execute then
