@@ -273,8 +273,11 @@ local function open(ctx)
 			return open_pdf(node)
 		elseif node_mime:match("^text/.*") or
 			(node_mime:match("^application/.*") and
-				not (has_value(archive_mime_types, node_mime) or
-					has_value(open_document_mime_types, node_mime))) then
+				not (node_mime == "application/ogg"
+					or node_mime == "application/msword"
+					or node_mime == "application/epub+zip"
+					or node_mime:match("^application/vnd.*")
+					or has_value(archive_mime_types, node_mime))) then
 			return open_text(node)
 		end
 
